@@ -1,27 +1,37 @@
 use clap::Parser;
 
 mod day_1_1;
+mod day_1_2;
 
 #[derive(Parser)]
 #[command(name = "aoc-2024")]
 #[command(version, about, long_about = None)]
 struct Cli {
-    day: Option<String>,
-    part: Option<String>,
+    #[arg(value_parser = clap::value_parser!(u16).range(1..))]
+    day: u16,
+    #[arg(value_parser = clap::value_parser!(u16).range(1..))]
+    part: u16,
     #[arg(short, long, default_value = "-")]
     file: String,
 }
 
 fn main() {
     let cli = Cli::parse();
-    let filename = cli.file;
+    let file = match aoc2024::open(&cli.file) {
+        Err(err) => panic!("Failed to read input: {}", err),
+        Ok(file) => file
+    };
 
-    if cli.day.as_deref() == Some("1") {
-        match aoc2024::open(&filename) {
-            Err(err) => eprintln!("Failed to open {}: {}", filename, err),
-            Ok(file) => {
+    match cli.day {
+        1 => match cli.part {
+            1 => {
                 let _ = day_1_1::run(file);
             }
+            2 => {
+                let _ = day_1_2::run(file);
+            }
+            _ => println!("Part {} not implemented, yet", cli.part)
         }
+        _ => println!("Day {} not implemented, yet", cli.day)
     }
 }

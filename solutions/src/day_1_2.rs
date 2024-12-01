@@ -18,6 +18,7 @@ pub fn run(file: Box<dyn BufRead>) -> Result<(), Box<dyn std::error::Error>> {
 
     for (i, j) in zip(&lists[0], &lists[1]) {
         let distance = (i - j).abs();
+        println!("Distance: {}", distance);
         sum += distance;
     }
 
