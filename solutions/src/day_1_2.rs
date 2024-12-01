@@ -1,5 +1,4 @@
 use std::io::BufRead;
-use std::iter::zip;
 
 pub fn run(file: Box<dyn BufRead>) -> Result<(), Box<dyn std::error::Error>> {
     let mut lists = vec![vec![], vec![]];
@@ -11,19 +10,9 @@ pub fn run(file: Box<dyn BufRead>) -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    lists[0].sort();
-    lists[1].sort();
+    let sum: i32 = lists[0].iter().map(|i| lists[1].iter().filter(|j| i == *j).count() as i32  * i).sum();
 
-    let mut sum = 0;
-
-    for (i, j) in zip(&lists[0], &lists[1]) {
-        let distance = (i - j).abs();
-        println!("Distance: {}", distance);
-        sum += distance;
-    }
-
-    println!("Sum of distances: {}", sum);
-
+    println!("Sum of products: {}", sum);
 
     Ok(())
 }
