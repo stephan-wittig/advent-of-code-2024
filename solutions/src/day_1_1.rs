@@ -11,18 +11,11 @@ pub fn run(file: Box<dyn BufRead>) -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    lists[0].sort();
-    lists[1].sort();
+    lists.iter_mut().for_each(|l| l.sort());
 
-    let mut sum = 0;
-
-    for (i, j) in zip(&lists[0], &lists[1]) {
-        let distance = (i - j).abs();
-        sum += distance;
-    }
+    let sum: i32 = zip(&lists[0], &lists[1]).map(|(i, j)| (i - j).abs()).sum();
 
     println!("Sum of distances: {}", sum);
-
 
     Ok(())
 }
