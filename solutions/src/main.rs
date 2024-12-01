@@ -17,7 +17,7 @@ struct Cli {
 
 fn main() {
     let cli = Cli::parse();
-    let file = match aoc2024::open(&cli.file) {
+    let file = match aoc2024::open(&cli.file, cli.day) {
         Err(err) => panic!("Failed to read input: {}", err),
         Ok(file) => file
     };
