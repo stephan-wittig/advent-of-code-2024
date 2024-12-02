@@ -2,6 +2,8 @@ use clap::Parser;
 
 mod day_1_1;
 mod day_1_2;
+mod day_2_1;
+mod day_2_2;
 
 #[derive(Parser)]
 #[command(name = "aoc-2024")]
@@ -29,6 +31,15 @@ fn main() {
             }
             2 => {
                 let _ = day_1_2::run(file);
+            }
+            _ => println!("Part {} not implemented, yet", cli.part)
+        }
+        2 => match cli.part {
+            1 => {
+                let _ = day_2_1::run(file);
+            }
+            2 => {
+                let _ = day_2_2::run(file);
             }
             _ => println!("Part {} not implemented, yet", cli.part)
         }
