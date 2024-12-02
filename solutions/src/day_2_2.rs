@@ -17,45 +17,21 @@ pub fn run(file: Box<dyn BufRead>) -> Result<(), Box<dyn std::error::Error>> {
 
 fn is_report_safe(report: &Vec<i32>) -> bool {
     let safe = position_issue(report) == None;
-    if safe {
-        println!("Safe:    {:?}", report);
-    } else {
-        println!("Unsafe:  {:?}", report);
-    }
     return safe;
 
 }
 
 fn is_report_safish(report: &Vec<i32>) -> bool {
-    println!("######");
     if is_report_safe(report) {
         return true;
     }
 
-    if get_general_direction(report) == 0 {
-        // Brute force
-        for i in 0..report.len() {
-            if is_report_safe(&remove_pos(report, i)) {
-                return true;
-            }
+    // Brute force
+    for i in 0..report.len() {
+        if is_report_safe(&remove_pos(report, i)) {
+            return true;
         }
-        return false;
     }
-
-    let issue_pos = position_issue(report).unwrap();
-
-    // try removing first offending element
-    if is_report_safe(&remove_pos(report, issue_pos)) {
-        return true;
-    }
-
-    // try removing second offending element
-    if is_report_safe(&remove_pos(report, issue_pos + 1)) {
-        return true;
-    }
-
-    println!("Unsafe-ish!");
-
     return false;
 }
 
