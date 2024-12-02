@@ -8,20 +8,38 @@ pub fn run(file: Box<dyn BufRead>) -> Result<(), Box<dyn std::error::Error>> {
         reports.push(line.split(" ").map(|s| s.parse::<i32>().unwrap()) .collect());
     }
 
-    let safe_reports = reports.iter().filter(|report| is_report_safe(report));
+    let safish_reports = reports.iter().filter(|report| is_report_safish(report));
 
-    println!("Number of safe reports: {}", safe_reports.count());
+    println!("Number of safe reports: {}", safish_reports.count());
 
     Ok(())
 }
 
 fn is_report_safe(report: &Vec<i32>) -> bool {
-    return position_issue(report) == None;
+    let safe = position_issue(report) == None;
+    if safe {
+        println!("Safe:    {:?}", report);
+    } else {
+        println!("Unsafe:  {:?}", report);
+    }
+    return safe;
+
 }
 
 fn is_report_safish(report: &Vec<i32>) -> bool {
+    println!("######");
     if is_report_safe(report) {
         return true;
+    }
+
+    if get_general_direction(report) == 0 {
+        // Brute force
+        for i in 0..report.len() {
+            if is_report_safe(&remove_pos(report, i)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     let issue_pos = position_issue(report).unwrap();
@@ -36,8 +54,9 @@ fn is_report_safish(report: &Vec<i32>) -> bool {
         return true;
     }
 
-    return false;
+    println!("Unsafe-ish!");
 
+    return false;
 }
 
 fn remove_pos(report: &Vec<i32>, position: usize) -> Vec<i32> {
@@ -52,7 +71,8 @@ fn position_issue(report: &Vec<i32>) -> Option<usize> {
 
     return report.windows(2).position(|levels| {
         get_current_direction(levels) != general_direction ||
-        get_step_width(levels) > 3
+        get_step_width(levels) > 3 ||
+        get_step_width(levels) == 0
     });
 }
 
