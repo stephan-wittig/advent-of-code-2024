@@ -3,7 +3,9 @@ use regex::Regex;
 
 
 pub fn run(file: Box<dyn BufRead>) -> Result<(), Box<dyn std::error::Error>> {
+    // Matches mul statements and captures factors
     let mul_re = Regex::new(r"mul\((\d+),(\d+)\)").unwrap();
+    // Captures strings between beginning or do() and don't() or end
     let do_re = Regex::new(r"(?:^|do\(\))(.+?)(?:$|don't\(\))").unwrap();
     
     // Read lines, unwrap and join into one string

@@ -3,6 +3,7 @@ use regex::Regex;
 
 
 pub fn run(file: Box<dyn BufRead>) -> Result<(), Box<dyn std::error::Error>> {
+    // Matches mul statements and captures factors
     let mul_re = Regex::new(r"mul\((\d+),(\d+)\)").unwrap();
     
     // Read lines and unwrap
