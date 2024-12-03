@@ -10,8 +10,6 @@ pub fn run(file: Box<dyn BufRead>) -> Result<(), Box<dyn std::error::Error>> {
     let input: String = file.lines().map(|l| l.unwrap()).collect::<Vec<String>>().concat();
     // Removes 'don't' sequences
     let valid_input: String = do_re.captures_iter(&input).map(|c| c.extract::<1>().1[0]).collect();
-    
-    println!("Valid string:  {}", valid_input);
 
     // Find mul instructions in string
     let sum = mul_re.captures_iter(&valid_input)
@@ -20,6 +18,7 @@ pub fn run(file: Box<dyn BufRead>) -> Result<(), Box<dyn std::error::Error>> {
             let (_, factors_str) = c.extract::<2>();
             let  factors = factors_str.map(|f| f.parse::<i32>().unwrap());
             return factors[0] * factors[1];
+        // Sum up
         }).sum::<i32>();
 
     println!("Sum of products is {}", sum);
