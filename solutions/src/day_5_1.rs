@@ -1,82 +1,101 @@
-use std::io::BufRead;
-
-const FIND: &str = "XMAS";
+use std::{collections::HashMap, io::{BufRead, Lines}};
 
 pub fn run(file: Box<dyn BufRead>) -> Result<(), Box<dyn std::error::Error>> {
-    let find_len = FIND.chars().count();
-    // Read lines and unwrap
-    let lines: Vec<String> = file.lines().map(|l| l.unwrap()).collect();
-    let dimensions = (lines.len(), lines[0].chars().count());
+    // Read lines
+    let mut lines = file.lines();
 
-    let test_direction = |pos: (usize, usize), dir: (i32, i32), lines: Vec<String>| -> bool {
-        let end_pos: (i32, i32) = (pos.0 as i32 + ((find_len as i32 - 1) * dir.0), pos.1 as i32 + (find_len as i32 - 1) * dir.1);
-        // Return early if word exceed bounds
-        println!("End position: {:?}", end_pos);
-        if !(end_pos.0 >= 0 &&
-            end_pos.1 >= 0 &&
-            end_pos.0 < dimensions.0 as i32 &&
-            end_pos.1 < dimensions.1 as i32)
-        {
-            return false;
+    let rules = Rules::new(&mut lines);
+
+    let sum: i32 = lines.map(|l| Update::new(l.unwrap()))
+        .filter(|update| update.is_valid(&rules))
+        .map(|update| update.middle_page())
+        .sum();
+    
+    println!("The sum of the middle page numbers of valid updates is {}", sum);
+
+    Ok(())
+}
+
+struct Rules {
+    _rules_map: HashMap<i32, Vec<i32>>
+}
+
+impl Rules {
+    /*
+     * Parses all instructions from reader. Advances reader until start of updates
+     */
+    fn new(lines_reader: &mut Lines<Box<dyn BufRead>>) -> Self {
+        let mut _rules_map: HashMap<i32, Vec<i32>>= HashMap::new();
+
+        for line in lines_reader {
+            let line = line.unwrap_or("".to_string());
+            if line == "" {
+                // Stop reading if empty line is found
+                break;
+            }
+
+            let [predecessor, successor] =
+                line.split("|").map(|s| s.parse::<i32>().unwrap()).collect::<Vec<i32>>()[..] 
+            else {
+                panic!("Pattern of rule cannot match");
+            };
+
+            let successors =_rules_map.entry(predecessor).or_insert(vec![]);
+            successors.push(successor);
         }
 
-        // Skip first letter because it was already checked
-        let find_iter = FIND.char_indices().skip(1);
+        println!("Built map of rules, e.g., {:?}", _rules_map.iter().next().unwrap());
 
-        for (i, c) in find_iter {
-            let indices: (i32, i32) = (pos.0 as i32 + dir.0 * i as i32, pos.1 as i32 + dir.1 * i as i32);
+        Self {
+            _rules_map
+        }
+    }
 
-            if lines[indices.0 as usize].chars().nth(indices.1 as usize).unwrap() != c {
-                return false;
+    fn successors_of(&self, predecessor: i32) -> Option<&Vec<i32>> {
+        let successors = self._rules_map.get(&predecessor);
+        successors
+    }
+}
+
+struct Update {
+    _pages: Vec<i32>
+}
+
+impl Update {
+    fn new(update_line: String) -> Self {
+        Self {
+            _pages: update_line.split(",").map(|s| s.parse::<i32>().unwrap()).collect()
+        }
+    }
+
+    fn middle_page(&self) -> i32 {
+        if self._pages.len() % 2 != 1 {
+            panic!("Number of updated pages is even. There's no middle page!");
+        }
+        self._pages[(self._pages.len() - 1) / 2]
+    }
+
+    fn is_valid(&self, rules: &Rules) -> bool {
+        // println!("Checking {:?}", self._pages);
+        let pages_iter = self._pages.iter().enumerate().rev();
+        // Note this iterates in reverse to check if predecessors should be successors
+        for (i, page) in pages_iter {
+            match rules.successors_of(*page) {
+                None => continue, // No need to check if there are no rules
+                Some(sucessors) => {
+                    // Loop through actual predecessors
+                    let predecessors = &self._pages[..i];
+                    for predecessor in predecessors {
+                        if sucessors.contains(predecessor) {
+                            // One of the predecessors should be a successor!
+                            // println!("Update is invalid: {} should come after {}", predecessor, page);
+                            return false;
+                        }
+                    }
+                }
             }
         }
 
         return true;
-    };
-
-
-    let get_matches = |pos: (usize, usize), lines: Vec<String>| -> i32 {
-        println!("Checking pos {:?}", pos);
-        // Valid directions
-        let directions = vec![
-            // 'Normal': Top-to-bottom and Left-to-right
-            (1, 0),
-            (0, 1),
-            // Reverse of normal
-            (-1, 0),
-            (0, -1),
-            // Diagonal
-            (1, 1),
-            (-1, 1),
-            (1, -1),
-            (-1, -1)
-        ];
-        // Multiple matches might start at the same point
-        let mut matches: i32 = 0;
-
-        if lines[pos.0].chars().nth(pos.1).unwrap() != FIND.chars().nth(0).unwrap() {
-            return matches;
-        }
-
-        for direction in directions {
-            if test_direction(pos, direction, lines.clone()) {
-                matches += 1;
-            }
-        }
-
-        return matches;
-    };
-
-    let mut sum: i32 = 0;
-
-    // Go through all lines and chars and count how many matches FIND start there
-    for (y, l) in lines.iter().enumerate() {
-        for (x, _) in l.chars().enumerate() {
-            sum += get_matches((y, x), lines.clone());
-        }
     }
-
-    println!("Sum of XMAS {}", sum);
-
-    Ok(())
 }
