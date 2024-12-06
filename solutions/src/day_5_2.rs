@@ -1,5 +1,4 @@
 use std::{collections::HashMap, io::{BufRead, Lines}};
-use itertools::Itertools;
 
 pub fn run(file: Box<dyn BufRead>) -> Result<(), Box<dyn std::error::Error>> {
     // Read lines
@@ -74,7 +73,7 @@ impl Update {
         self._pages[(self._pages.len() - 1) / 2]
     }
 
-    fn is_valid(&self, rules: &Rules) -> bool {
+    fn find_invalid_pair(&self, rules: &Rules) -> Option<(usize, usize)> {
         let pages_iter = self._pages.iter().enumerate().rev();
         // Note this iterates in reverse to check if predecessors should be successors
         for (i, page) in pages_iter {
@@ -83,33 +82,30 @@ impl Update {
                 Some(sucessors) => {
                     // Loop through actual predecessors
                     let predecessors = &self._pages[..i];
-                    for predecessor in predecessors {
+                    for (j, predecessor) in predecessors.iter().enumerate() {
                         if sucessors.contains(predecessor) {
                             // One of the predecessors should be a successor
-                            return false;
+                            return Some((i, j));
                         }
                     }
                 }
             }
         }
 
-        return true;
+        return None;
     }
 
-    /*
-     * This brute-forces the order by trying every possible order
-     */
+    fn is_valid(&self, rules: &Rules) -> bool {
+        self.find_invalid_pair(rules).is_none()
+    }
+
     fn fix_order(&mut self, rules: &Rules) -> &Self {
-        // All possible orders of pages
-        for (i, permutation) in self._pages.clone().iter().cloned().permutations(self._pages.len()).enumerate() {
-            self._pages = permutation;
-            println!("Try {:?}", self._pages);
-            if self.is_valid(rules) {
-                println!("Found valid order after {} tries", i + 1);
-                break;
-            }
+        while let Some(invalid_pair) = self.find_invalid_pair(rules) {
+            let tmp = self._pages[invalid_pair.0];
+            self._pages[invalid_pair.0] = self._pages[invalid_pair.1];
+            self._pages[invalid_pair.1] = tmp;
         }
 
-        return self;
+        self
     }
 }
