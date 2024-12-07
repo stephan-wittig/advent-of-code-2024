@@ -1,4 +1,5 @@
-use std::{collections::HashMap, io::{BufRead, Lines}, ops::Add};
+use core::fmt;
+use std::{collections::HashMap, fmt::Display, io::{BufRead, Lines}, ops::Add};
 
 /// Postion as (Row, Column) within the map
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
@@ -9,6 +10,12 @@ impl Add for Position {
     
     fn add(self, pos: Position) -> Self {
         Self(self.0 + pos.0, self.1 + pos.1)
+    }
+}
+
+impl Display for Position {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "({}, {})", self.0, self.1)
     }
 }
 
@@ -23,7 +30,14 @@ pub fn run(file: Box<dyn BufRead>) -> Result<(), Box<dyn std::error::Error>> {
 
     let patrol = Patrol::new(&mut lines);
 
-    let count = patrol.filter(|(_, is_new)| *is_new).count();
+    let mut count = 0;
+    
+    for (i, (pos, was_visited)) in patrol.enumerate() {
+        println!("Step {} at {}{}", i, pos, if !was_visited {" new!"} else {""});
+        if !was_visited {
+            count += 1;
+        }
+    }
     
     println!("The number of visited fields is {}", count);
 
@@ -119,7 +133,7 @@ impl Iterator for Patrol {
         }
 
         self._guard_pos = self._guard_pos + self._guard_dir;
-        
+
         match self.get_char_at(self._guard_pos) {
             None => None,
             _ => Some((self._guard_pos, self._visit()))
