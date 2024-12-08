@@ -1,5 +1,5 @@
 use core::fmt;
-use std::{collections::HashMap, fmt::Display, io::{BufRead, Lines}};
+use std::{collections::HashMap, fmt::Display, io::{BufRead, Lines}, ops::AddAssign};
 use std::ops::{Add, Mul, Sub};
 use itertools::Itertools;
 
@@ -98,25 +98,38 @@ impl Plan {
 
         // println!("Frequencies: {:#?}", self.frequencies.len());
 
-        for (frequency, antennas) in self.frequencies.iter() {
+        for antennas in self.frequencies.values() {
             //println!("Frequency: {:?} {:?}", frequency, antennas);
             for antenna_pair in antennas.iter().combinations(2) {
                 // println!("Checking combination: {:?}", antennas);
                 let [&first, &second] = antenna_pair[..2] else {
                     panic!("Couldn't match two antennas");
                 };
-                let distance = second - first;
-                // Check first possible spot
-                let possible_antinodes =  vec![
-                    second + distance,
-                    first - distance
-                ];
 
-                for possible_antinode in possible_antinodes {
-                    if self.is_valid_pos(possible_antinode) {
-                        //println!("Combination is valid!");
-                        antinodes.push(possible_antinode);
+                let direction = second - first;
+
+                // First go forwards. This includes the second antenna
+                let mut last_antenna = first;
+                loop {
+                    last_antenna = last_antenna + direction;
+
+                    if !self.is_valid_pos(last_antenna) {
+                        break;
                     }
+
+                    antinodes.push(last_antenna);
+                }
+
+                // Now go backwards. This includes the first antenna
+                let mut last_antenna = second;
+                loop {
+                    last_antenna = last_antenna - direction;
+
+                    if !self.is_valid_pos(last_antenna) {
+                        break;
+                    }
+
+                    antinodes.push(last_antenna);
                 }
             }
         }
