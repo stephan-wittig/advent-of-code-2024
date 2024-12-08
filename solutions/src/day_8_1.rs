@@ -98,7 +98,7 @@ impl Plan {
 
         // println!("Frequencies: {:#?}", self.frequencies.len());
 
-        for (frequency, antennas) in self.frequencies.iter() {
+        for antennas in self.frequencies.values() {
             //println!("Frequency: {:?} {:?}", frequency, antennas);
             for antenna_pair in antennas.iter().combinations(2) {
                 // println!("Checking combination: {:?}", antennas);
