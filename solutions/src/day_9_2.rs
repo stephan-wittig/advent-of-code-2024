@@ -1,4 +1,4 @@
-use std::io::BufRead;
+use std::{  io::BufRead};
 use itertools::repeat_n;
 
 /// Diskspace has a length and a file ID
@@ -138,6 +138,13 @@ pub fn run(file: Box<dyn BufRead>) -> Result<(), Box<dyn std::error::Error>> {
                 // i is index of the space that's big enough
                 // j is index of the file that is to be moved
                 let j = file_system.iter().position(file.find_by_id()).unwrap();
+                print!("\nMoving file {:?} at {} to {}",file.file_id, j, i);
+                // Cancel if file comes before space
+                if j < i {
+                    print!(" - Cancelled!");
+                    continue;
+                }
+
                 let tmp = file_system[j];
                 file_system[j] = tmp.empty();
 
@@ -156,7 +163,7 @@ pub fn run(file: Box<dyn BufRead>) -> Result<(), Box<dyn std::error::Error>> {
     let expanded_file_system: Vec<FileId> = file_system.iter()
         .flat_map(|ds| ds.to_blocks())
         .collect();
-
+    
     let checksum = expanded_file_system.iter().enumerate().fold(
         0, | acc, (i, n)| {
             acc + match n {
