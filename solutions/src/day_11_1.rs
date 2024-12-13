@@ -6,9 +6,9 @@ pub fn run(file: Box<dyn BufRead>) -> Result<(), Box<dyn std::error::Error>> {
         .map(|s| s.parse::<i64>().unwrap())
         .collect();
 
-    for i in 1..76 {
+    for i in 1..26 {
         stones = stones.iter().flat_map(|s| blink(*s)).collect();
-        println!("Saw {} stones after blinking {} time(s)", stones.len(), i);
+        print!("\rSaw {} stones after blinking {} time(s)", stones.len(), i);
     }
 
     Ok(())

@@ -21,6 +21,7 @@ mod day_9_2;
 mod day_10_1;
 mod day_10_2;
 mod day_11_1;
+mod day_11_2;
 
 #[derive(Parser)]
 #[command(name = "aoc-2024")]
@@ -136,9 +137,9 @@ fn main() {
             1 => {
                 let _ = day_11_1::run(file);
             }
-            /*2 => {
-                let _ = day_10_2::run(file);
-            }*/
+            2 => {
+                let _ = day_11_2::run(file);
+            }
             _ => println!("Part {} not implemented, yet", cli.part)
         }
         _ => println!("Day {} not implemented, yet", cli.day)
